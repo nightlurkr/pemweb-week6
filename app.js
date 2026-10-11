@@ -8,6 +8,7 @@ const deadlineEl = document.getElementById("deadline");
 const errorEl = document.getElementById("error");
 const filterEl = document.getElementById("filter");
 const statusEl = document.getElementById("status");
+const kirimEl = document.getElementById("kirim");
 
 let filterAktif = "semua";
 let statusMuat = "memuat";
@@ -88,40 +89,45 @@ function render() {
   kosongEl.hidden = memuat || gagal || terlihat.length > 0;
 }
 
+function pesanDari(error) {
+  return error instanceof TypeError
+    ? "Tidak bisa terhubung ke server. Cek koneksi kamu."
+    : error.message;
+}
+
 function tampilError(pesan) {
   errorEl.textContent = pesan;
   errorEl.hidden = false;
 }
 
-formEl.addEventListener("submit", (event) => {
+formEl.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const judul = judulEl.value.trim();
-  const deadline = deadlineEl.value;
-
-  if (judul.length < 3) {
-    tampilError("Judul tugas minimal 3 karakter.");
-    return;
-  }
-
-  if (!deadline) {
-    tampilError("Deadline wajib diisi.");
-    return;
-  }
-
   errorEl.hidden = true;
+  kirimEl.disabled = true;
+  kirimEl.textContent = "Mengirim...";
 
-  tugas.push({
-    id: Date.now(),
-    judul: judul,
-    matkul: matkulEl.value,
-    deadline: deadline,
-    selesai: false,
-  });
+  try {
+    const baru = await api("/api/tugas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        judul: judulEl.value.trim(),
+        matkul: matkulEl.value,
+        deadline: deadlineEl.value,
+      }),
+    });
 
-  formEl.reset();
-  judulEl.focus();
-  render();
+    tugas.push(baru);
+    formEl.reset();
+    judulEl.focus();
+    render();
+  } catch (error) {
+    tampilError(pesanDari(error));
+  } finally {
+    kirimEl.disabled = false;
+    kirimEl.textContent = "Tambah";
+  }
 });
 
 daftarEl.addEventListener("click", (event) => {
@@ -193,9 +199,7 @@ async function muat() {
     isiPilihanMatkul(daftarMatkul);
     statusMuat = "siap";
   } catch (error) {
-    pesanError = error instanceof TypeError
-      ? "Tidak bisa terhubung ke server. Cek koneksi kamu."
-      : error.message;
+    pesanError = pesanDari(error);
     statusMuat = "error";
   }
 

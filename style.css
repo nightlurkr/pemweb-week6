@@ -65,6 +65,11 @@ select {
 
 .btn-tambah:hover { background: #2a4f7c; }
 
+.btn-tambah:disabled {
+  background: #94a3b8;
+  cursor: progress;
+}
+
 .error {
   margin: 10px 0 0;
   color: #b91c1c;
