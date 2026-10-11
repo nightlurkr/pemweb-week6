@@ -208,3 +208,8 @@ li.selesai .judul {
 }
 
 .btn-coba-lagi:hover { background: #f1f5f9; }
+
+.daftar li.sibuk {
+  opacity: 0.5;
+  pointer-events: none;
+}

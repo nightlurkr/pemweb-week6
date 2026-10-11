@@ -130,20 +130,37 @@ formEl.addEventListener("submit", async (event) => {
   }
 });
 
-daftarEl.addEventListener("click", (event) => {
+daftarEl.addEventListener("click", async (event) => {
   const li = event.target.closest("li");
   if (!li) return;
 
   const id = Number(li.dataset.id);
+  const klikHapus = event.target.matches(".btn-hapus");
+  const klikCentang = event.target.matches("input[type='checkbox']");
 
-  if (event.target.matches(".btn-hapus")) {
-    tugas = tugas.filter((t) => t.id !== id);
-    render();
-  } else if (event.target.matches("input[type='checkbox']")) {
-    const item = tugas.find((t) => t.id === id);
-    item.selesai = event.target.checked;
-    render();
+  if (!klikHapus && !klikCentang) return;
+
+  li.classList.add("sibuk");
+
+  try {
+    if (klikHapus) {
+      await api(`/api/tugas/${id}`, { method: "DELETE" });
+      tugas = tugas.filter((t) => t.id !== id);
+    } else {
+      const diperbarui = await api(`/api/tugas/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ selesai: event.target.checked }),
+      });
+      tugas = tugas.map((t) => (t.id === diperbarui.id ? diperbarui : t));
+    }
+
+    errorEl.hidden = true;
+  } catch (error) {
+    tampilError(pesanDari(error));
   }
+
+  render();
 });
 
 filterEl.addEventListener("click", (event) => {
