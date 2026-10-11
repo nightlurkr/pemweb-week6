@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Tracker Kuliah</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="mock-api.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="card">
+    <h1> Task Tracker Kuliah <span class="versi">v2 · REST API</span></h1>
+
+    <form id="form-tugas" novalidate>
+      <input type="text" id="judul" placeholder="Judul tugas (min. 3 karakter)" autocomplete="off">
+
+      <div class="baris">
+        <select id="matkul"></select>
+        <input type="date" id="deadline">
+        <button type="submit" class="btn-tambah">Tambah</button>
+      </div>
+
+      <p id="error" class="error" role="alert" hidden></p>
+    </form>
+
+    <div class="baris-filter">
+      <div class="filter" id="filter">
+        <button type="button" class="on" data-filter="semua">Semua</button>
+        <button type="button" data-filter="aktif">Aktif</button>
+        <button type="button" data-filter="selesai">Selesai</button>
+      </div>
+      <span id="counter" class="counter"></span>
+    </div>
+
+    <ul id="daftar" class="daftar"></ul>
+    <p id="kosong" class="kosong" hidden>Belum ada tugas di daftar ini.</p>
+  </main>
+</body>
+</html>
