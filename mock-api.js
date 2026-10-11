@@ -1,6 +1,35 @@
 (() => {
-  let mode = "normal";
-  let idBerikutnya = 3;
+  const KUNCI = "mock-api-state";
+
+  const awal = {
+    mode: "normal",
+    idBerikutnya: 3,
+    data: [
+      { id: 1, judul: "Lab 10 event delegation", matkul: "Pemrograman Web", deadline: "2026-10-08", selesai: false },
+      { id: 2, judul: "Ringkasan materi async/await", matkul: "Pemrograman Web", deadline: "2026-10-10", selesai: false },
+    ],
+  };
+
+  function muatSimpanan() {
+    try {
+      return JSON.parse(sessionStorage.getItem(KUNCI)) || structuredClone(awal);
+    } catch (e) {
+      return structuredClone(awal);
+    }
+  }
+
+  function simpan() {
+    try {
+      sessionStorage.setItem(KUNCI, JSON.stringify({ mode, idBerikutnya, data }));
+    } catch (e) {
+      // sessionStorage tidak tersedia, mock tetap jalan di memori saja
+    }
+  }
+
+  const simpanan = muatSimpanan();
+  let mode = simpanan.mode;
+  let idBerikutnya = simpanan.idBerikutnya;
+  let data = simpanan.data;
 
   const daftarMatkul = [
     "Pemrograman Web",
@@ -10,11 +39,6 @@
     "Ethical Hacking",
     "IoT",
     "Komdat Jarkom",
-  ];
-
-  let data = [
-    { id: 1, judul: "Lab 10 event delegation", matkul: "Pemrograman Web", deadline: "2026-10-08", selesai: false },
-    { id: 2, judul: "Ringkasan materi async/await", matkul: "Pemrograman Web", deadline: "2026-10-10", selesai: false },
   ];
 
   function respons(status, body) {
@@ -60,6 +84,7 @@
         selesai: false,
       };
       data.push(baru);
+      simpan();
       return respons(201, baru);
     }
 
@@ -67,12 +92,14 @@
       const item = data.find((t) => t.id === id);
       if (!item) return respons(404, { pesan: "Tugas tidak ditemukan." });
       Object.assign(item, body);
+      simpan();
       return respons(200, item);
     }
 
     if (metode === "DELETE") {
       if (!data.some((t) => t.id === id)) return respons(404, { pesan: "Tugas tidak ditemukan." });
       data = data.filter((t) => t.id !== id);
+      simpan();
       return respons(204);
     }
 
@@ -85,8 +112,13 @@
         throw new Error('mode harus "normal", "offline", atau "lambat"');
       }
       mode = nilai;
+      simpan();
       console.log(`[mock api] mode = ${mode}`);
     },
     getMode: () => mode,
+    reset() {
+      sessionStorage.removeItem(KUNCI);
+      console.log("[mock api] data dikembalikan ke kondisi awal, refresh halaman");
+    },
   };
 })();

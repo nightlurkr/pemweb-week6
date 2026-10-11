@@ -13,6 +13,7 @@ const kirimEl = document.getElementById("kirim");
 let filterAktif = "semua";
 let statusMuat = "memuat";
 let pesanError = "";
+let sedangMuat = false;
 
 let tugas = [];
 
@@ -90,9 +91,9 @@ function render() {
 }
 
 function pesanDari(error) {
-  return error instanceof TypeError
-    ? "Tidak bisa terhubung ke server. Cek koneksi kamu."
-    : error.message;
+  if (error instanceof TypeError) return "Tidak bisa terhubung ke server. Cek koneksi kamu.";
+  if (error && error.message) return error.message;
+  return "Terjadi kesalahan yang tidak terduga.";
 }
 
 function tampilError(pesan) {
@@ -203,7 +204,11 @@ function isiPilihanMatkul(daftar) {
 }
 
 async function muat() {
+  if (sedangMuat) return;
+
+  sedangMuat = true;
   statusMuat = "memuat";
+  errorEl.hidden = true;
   render();
 
   try {
@@ -218,10 +223,18 @@ async function muat() {
   } catch (error) {
     pesanError = pesanDari(error);
     statusMuat = "error";
+  } finally {
+    sedangMuat = false;
   }
 
   render();
 }
+
+window.addEventListener("unhandledrejection", (event) => {
+  event.preventDefault();
+  console.warn("[app] promise tanpa catch:", event.reason);
+  tampilError(pesanDari(event.reason));
+});
 
 statusEl.addEventListener("click", (event) => {
   if (event.target.matches(".btn-coba-lagi")) muat();
