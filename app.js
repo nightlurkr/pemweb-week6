@@ -7,8 +7,11 @@ const matkulEl = document.getElementById("matkul");
 const deadlineEl = document.getElementById("deadline");
 const errorEl = document.getElementById("error");
 const filterEl = document.getElementById("filter");
+const statusEl = document.getElementById("status");
 
 let filterAktif = "semua";
+let statusMuat = "memuat";
+let pesanError = "";
 
 let tugas = [];
 
@@ -20,6 +23,33 @@ function tampil(t) {
 
 function render() {
   daftarEl.textContent = "";
+  statusEl.textContent = "";
+
+  const memuat = statusMuat === "memuat";
+  const gagal = statusMuat === "error";
+
+  statusEl.hidden = !memuat && !gagal;
+
+  if (memuat) {
+    for (let i = 0; i < 3; i++) {
+      const batang = document.createElement("div");
+      batang.className = "skeleton";
+      statusEl.append(batang);
+    }
+  }
+
+  if (gagal) {
+    const pesan = document.createElement("p");
+    pesan.className = "error";
+    pesan.textContent = pesanError;
+
+    const cobaLagi = document.createElement("button");
+    cobaLagi.type = "button";
+    cobaLagi.className = "btn-coba-lagi";
+    cobaLagi.textContent = "Coba lagi";
+
+    statusEl.append(pesan, cobaLagi);
+  }
 
   const terlihat = tugas.filter(tampil);
 
@@ -54,8 +84,8 @@ function render() {
   }
 
   const jumlahAktif = tugas.filter((t) => !t.selesai).length;
-  counterEl.textContent = `${jumlahAktif} tugas aktif`;
-  kosongEl.hidden = terlihat.length > 0;
+  counterEl.textContent = memuat || gagal ? "" : `${jumlahAktif} tugas aktif`;
+  kosongEl.hidden = memuat || gagal || terlihat.length > 0;
 }
 
 function tampilError(pesan) {
@@ -150,14 +180,30 @@ function isiPilihanMatkul(daftar) {
 }
 
 async function muat() {
-  const [dariServer, daftarMatkul] = await Promise.all([
-    api("/api/tugas"),
-    api("/api/matkul"),
-  ]);
+  statusMuat = "memuat";
+  render();
 
-  tugas = dariServer;
-  isiPilihanMatkul(daftarMatkul);
+  try {
+    const [dariServer, daftarMatkul] = await Promise.all([
+      api("/api/tugas"),
+      api("/api/matkul"),
+    ]);
+
+    tugas = dariServer;
+    isiPilihanMatkul(daftarMatkul);
+    statusMuat = "siap";
+  } catch (error) {
+    pesanError = error instanceof TypeError
+      ? "Tidak bisa terhubung ke server. Cek koneksi kamu."
+      : error.message;
+    statusMuat = "error";
+  }
+
   render();
 }
+
+statusEl.addEventListener("click", (event) => {
+  if (event.target.matches(".btn-coba-lagi")) muat();
+});
 
 muat();

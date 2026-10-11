@@ -169,3 +169,37 @@ li.selesai .judul {
   padding: 24px 0;
   margin: 0;
 }
+
+.status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton {
+  height: 56px;
+  border-radius: 8px;
+  background: #e2e8f0;
+  animation: denyut 1.2s ease-in-out infinite;
+}
+
+@keyframes denyut {
+  50% { opacity: 0.45; }
+}
+
+.status .error {
+  margin: 0;
+}
+
+.btn-coba-lagi {
+  font: inherit;
+  align-self: flex-start;
+  padding: 8px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #1e3a5f;
+  cursor: pointer;
+}
+
+.btn-coba-lagi:hover { background: #f1f5f9; }
